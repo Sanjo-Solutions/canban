@@ -1,4 +1,5 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend'
+import { createOrganization2 } from './create-organization2/resource.js'
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -6,13 +7,32 @@ adding a new "isDone" field as a boolean. The authorization rule below
 specifies that any user authenticated via an API key can "create", "read",
 "update", and "delete" any "Todo" records.
 =========================================================================*/
-const schema = a.schema({
-  Todo: a
-    .model({
-      content: a.string(),
-    })
-    .authorization(allow => [allow.owner()]),
-})
+const schema = a
+  .schema({
+    Organization: a
+      .model({
+        owner: a.string().required(),
+        name: a.string(),
+        members: a.hasMany('OrganizationMember', 'organizationID'),
+      })
+      .authorization(allow => [allow.owner().to(['read'])]),
+    OrganizationMember: a
+      .model({
+        // TODO
+        owner: a.string().required(),
+        organizationID: a.id(),
+        organization: a.belongsTo('Organization', 'organizationID'),
+      })
+      .secondaryIndexes(index => [index('owner')])
+      .authorization(allow => [allow.owner().to(['read'])]),
+    createOrganization2: a
+      .mutation()
+      .arguments({})
+      .returns(a.ref('Organization'))
+      .authorization(allow => [allow.authenticated()])
+      .handler(a.handler.function(createOrganization2)),
+  })
+  .authorization(allow => [allow.resource(createOrganization2)])
 
 export type Schema = ClientSchema<typeof schema>
 
