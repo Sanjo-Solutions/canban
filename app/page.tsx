@@ -29,7 +29,8 @@ function Inner({ user }: { user: AuthUser | undefined }) {
         setHasLoadedOrganization(false)
 
         if (user) {
-          const { data: organizationMembers } =
+          // FIXME
+          const { data: organizationMembers, errors } =
             await client.models.OrganizationMember.listOrganizationMemberByOwner(
               {
                 owner: user.userId,

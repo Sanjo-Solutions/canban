@@ -1,5 +1,9 @@
 {
-  "cSpell.words": ["mitgliedschaftsantrag", "Mitgliedschaftsantrag"],
+  "cSpell.words": [
+    "Antragformulars",
+    "mitgliedschaftsantrag",
+    "Mitgliedschaftsantrag"
+  ],
   "javascript.preferences.importModuleSpecifierEnding": "auto",
   "typescript.preferences.importModuleSpecifierEnding": "auto"
 }

@@ -14,10 +14,9 @@
     "@aws-amplify/ui-react": "^6.1.13",
     "aws-amplify": "^6.4.0",
     "bootstrap": "^5.3.3",
-    "next": "14.1.1",
+    "next": "^14.1.1",
     "react": "^18",
-    "react-dom": "^18",
-    "vite-tsconfig-paths": "^5.0.1"
+    "react-dom": "^18"
   },
   "devDependencies": {
     "@aws-amplify/backend": "^1.0.4",
@@ -33,6 +32,7 @@
     "jsdom": "^24.1.1",
     "sass": "^1.77.8",
     "typescript": "^5.3.2",
+    "vite-tsconfig-paths": "^5.0.1",
     "vitest": "^2.0.5"
   }
 }

@@ -1,25 +1,21 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend'
 import { createOrganization2 } from './create-organization2/resource.js'
 import { applyForMembership } from './apply-for-membership/resource.js'
+import { retrieveOrganizationName } from './retrieve-organization-name/resource.js'
+import { retrieveMembershipApplications } from './retrieve-membership-applications/resource.js'
 
 const schema = a
   .schema({
     Organization: a
       .model({
-        id: a
-          .id()
-          .required()
-          .authorization(allow => [allow.owner().to(['read'])]),
-        owner: a
-          .string()
-          .required()
-          .authorization(allow => [allow.owner().to(['read'])]),
+        id: a.id().required(),
+        owner: a.string().required(),
         // TODO: Can we prevent that all organization names can be read by anyone?
-        name: a.string().authorization(allow => [allow.guest().to(['read'])]),
+        name: a.string(),
         members: a.hasMany('OrganizationMember', 'organizationID'),
         areApplicationsEnabled: a.boolean().default(false),
       })
-      .authorization(allow => [allow.owner().to(['read'])]),
+      .authorization(allow => [allow.owner().to([])]),
     OrganizationMember: a
       .model({
         // TODO
@@ -28,7 +24,7 @@ const schema = a
         organization: a.belongsTo('Organization', 'organizationID'),
       })
       .secondaryIndexes(index => [index('owner')])
-      .authorization(allow => [allow.owner().to(['read'])]),
+      .authorization(allow => [allow.owner().to([])]),
     MembershipApplication: a
       .model({
         // TODO: Feature: Application only via private link
@@ -37,13 +33,14 @@ const schema = a
         usuallyInGermany: a.boolean().required(),
         birthDate: a.date().required(),
       })
+      .secondaryIndexes(index => [index('organizationID')])
       .authorization(allow => [allow.owner().to([])]),
     createOrganization2: a
       .mutation()
       .arguments({})
       .returns(a.ref('Organization'))
-      .authorization(allow => [allow.authenticated()])
-      .handler(a.handler.function(createOrganization2)),
+      .handler(a.handler.function(createOrganization2))
+      .authorization(allow => [allow.authenticated()]),
     applyForMembership: a
       .mutation()
       .arguments({
@@ -53,10 +50,26 @@ const schema = a
         birthDate: a.date().required(),
       })
       .returns(a.boolean())
-      .authorization(allow => [allow.guest()])
-      .handler(a.handler.function(applyForMembership)),
+      .handler(a.handler.function(applyForMembership))
+      .authorization(allow => [allow.guest(), allow.authenticated()]),
+    retrieveOrganizationName: a
+      .query()
+      .arguments({ id: a.id().required() })
+      .returns(a.string())
+      .handler(a.handler.function(retrieveOrganizationName))
+      .authorization(allow => [allow.guest(), allow.authenticated()]),
+    retrieveMembershipApplications: a
+      .query()
+      .returns(a.ref('MembershipApplication').required().array().required())
+      .handler(a.handler.function(retrieveMembershipApplications))
+      .authorization(allow => [allow.group('Mitarbeiter')]),
   })
-  .authorization(allow => [allow.resource(createOrganization2)])
+  .authorization(allow => [
+    allow.resource(createOrganization2),
+    allow.resource(applyForMembership),
+    allow.resource(retrieveOrganizationName),
+    allow.resource(retrieveMembershipApplications),
+  ])
 
 export type Schema = ClientSchema<typeof schema>
 
