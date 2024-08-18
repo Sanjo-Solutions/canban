@@ -57,7 +57,11 @@ const schema = a
     retrieveOrganizationName: a
       .query()
       .arguments({ id: a.id().required() })
-      .returns(a.string())
+      .returns(
+        a.customType({
+          name: a.string(),
+        })
+      )
       .handler(a.handler.function(retrieveOrganizationName))
       .authorization(allow => [allow.guest(), allow.authenticated()]),
     retrieveMembershipApplications: a

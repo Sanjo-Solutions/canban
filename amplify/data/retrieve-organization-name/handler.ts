@@ -46,14 +46,20 @@ export const handler: Schema['retrieveOrganizationName']['functionHandler'] =
         },
       })
 
-      if (data?.getOrganization?.name && !errors) {
-        return data.getOrganization.name
+      const organization = data.getOrganization
+
+      if (!errors && organization) {
+        return {
+          name: organization.name,
+        }
       } else {
-        console.error('errors', errors)
-        throw new Error('Error')
+        if (errors) {
+          console.error('errors', errors)
+        }
       }
     } catch (error: any) {
       console.error(error)
-      return null
     }
+
+    return null
   }
