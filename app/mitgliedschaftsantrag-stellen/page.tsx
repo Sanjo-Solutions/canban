@@ -1,60 +1,54 @@
-'use client'
-
 import type { Schema } from '@/amplify/data/resource'
-import { useSearchParams } from 'next/navigation'
 import { Form } from './form'
-import { generateClient } from 'aws-amplify/api'
-import { useEffect, useState } from 'react'
+import { generateServerClientUsingCookies } from '@aws-amplify/adapter-nextjs/data'
+import outputs from '@/amplify_outputs.json'
+import { cookies } from 'next/headers'
 
-const client = generateClient<Schema>()
+const client = generateServerClientUsingCookies<Schema>({
+  config: outputs,
+  cookies,
+})
 
-export default function () {
-  const searchParams = useSearchParams()
-  const [isLoading, setIsLoading] = useState<boolean>(true)
-  const organizationID = searchParams.get('organizationID')
-  const [organization, setOrganization] = useState<{
-    name?: string | null
-  } | null>(null)
-
-  useEffect(
-    function () {
-      async function f() {
-        if (organizationID) {
-          setIsLoading(true)
-          const { data: organization, errors } =
-            await client.queries.retrieveOrganizationName(
-              {
-                id: organizationID,
-              },
-              {
-                authMode: 'iam',
-              }
-            )
-          setIsLoading(false)
-
-          if (!errors) {
-            setOrganization(organization)
-          }
-        }
+export default async function ({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined }
+}) {
+  if (searchParams) {
+    let organizationID = searchParams.organizationID
+    if (organizationID) {
+      if (Array.isArray(organizationID)) {
+        organizationID = organizationID[organizationID.length - 1]
       }
 
-      f()
-    },
-    [organizationID]
-  )
+      const { data: organization, errors } =
+        await client.queries.retrieveOrganizationName(
+          {
+            id: organizationID,
+          },
+          {
+            authMode: 'iam',
+          }
+        )
 
-  return isLoading ? (
-    <div>Lädt...</div>
-  ) : organization ? (
-    <>
-      <h2>
-        Mitgliedschaftsantrag
-        {organization.name ? ` für ${organization.name}` : ''}
-      </h2>
+      if (errors) {
+        console.error(errors)
+      }
 
-      <Form />
-    </>
-  ) : (
-    <div>Ungültige URL.</div>
-  )
+      if (organization) {
+        return (
+          <>
+            <h2>
+              Mitgliedschaftsantrag
+              {organization.name ? ` für ${organization.name}` : ''}
+            </h2>
+
+            <Form />
+          </>
+        )
+      }
+    }
+  }
+
+  return <div>Ungültige URL.</div>
 }
