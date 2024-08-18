@@ -51,8 +51,8 @@ function Navigation() {
         </button>
         <div className='collapse navbar-collapse' id='navbarSupportedContent'>
           <ul className='navbar-nav me-auto'>
-            <Link className='nav-link' href='/mitgliedschaftsantrag'>
-              Mitgliedschaftsantrag
+            <Link className='nav-link' href='/mitgliedschaftsantrag-stellen'>
+              Mitgliedschaftsantrag stellen
             </Link>
           </ul>
 

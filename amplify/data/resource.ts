@@ -1,19 +1,23 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend'
 import { createOrganization2 } from './create-organization2/resource.js'
+import { applyForMembership } from './apply-for-membership/resource.js'
 
-/*== STEP 1 ===============================================================
-The section below creates a Todo database table with a "content" field. Try
-adding a new "isDone" field as a boolean. The authorization rule below
-specifies that any user authenticated via an API key can "create", "read",
-"update", and "delete" any "Todo" records.
-=========================================================================*/
 const schema = a
   .schema({
     Organization: a
       .model({
-        owner: a.string().required(),
-        name: a.string(),
+        id: a
+          .id()
+          .required()
+          .authorization(allow => [allow.owner().to(['read'])]),
+        owner: a
+          .string()
+          .required()
+          .authorization(allow => [allow.owner().to(['read'])]),
+        // TODO: Can we prevent that all organization names can be read by anyone?
+        name: a.string().authorization(allow => [allow.guest().to(['read'])]),
         members: a.hasMany('OrganizationMember', 'organizationID'),
+        areApplicationsEnabled: a.boolean().default(false),
       })
       .authorization(allow => [allow.owner().to(['read'])]),
     OrganizationMember: a
@@ -25,12 +29,32 @@ const schema = a
       })
       .secondaryIndexes(index => [index('owner')])
       .authorization(allow => [allow.owner().to(['read'])]),
+    MembershipApplication: a
+      .model({
+        // TODO: Feature: Application only via private link
+        organizationID: a.id().required(), // TODO: Allow create only for organization that have enabled the feature.
+        notMemberOfOtherCultivationAssociation: a.boolean().required(),
+        usuallyInGermany: a.boolean().required(),
+        birthDate: a.date().required(),
+      })
+      .authorization(allow => [allow.owner().to([])]),
     createOrganization2: a
       .mutation()
       .arguments({})
       .returns(a.ref('Organization'))
       .authorization(allow => [allow.authenticated()])
       .handler(a.handler.function(createOrganization2)),
+    applyForMembership: a
+      .mutation()
+      .arguments({
+        organizationID: a.id().required(),
+        notMemberOfOtherCultivationAssociation: a.boolean().required(),
+        usuallyInGermany: a.boolean().required(),
+        birthDate: a.date().required(),
+      })
+      .returns(a.boolean())
+      .authorization(allow => [allow.guest()])
+      .handler(a.handler.function(applyForMembership)),
   })
   .authorization(allow => [allow.resource(createOrganization2)])
 
@@ -45,32 +69,3 @@ export const data = defineData({
     },
   },
 })
-
-/*== STEP 2 ===============================================================
-Go to your frontend source code. From your client-side code, generate a
-Data client to make CRUDL requests to your table. (THIS SNIPPET WILL ONLY
-WORK IN THE FRONTEND CODE FILE.)
-
-Using JavaScript or Next.js React Server Components, Middleware, Server 
-Actions or Pages Router? Review how to generate Data clients for those use
-cases: https://docs.amplify.aws/gen2/build-a-backend/data/connect-to-API/
-=========================================================================*/
-
-/*
-"use client"
-import { generateClient } from "aws-amplify/data";
-import type { Schema } from "@/amplify/data/resource";
-
-const client = generateClient<Schema>() // use this Data client for CRUDL requests
-*/
-
-/*== STEP 3 ===============================================================
-Fetch records from the database and use them in your frontend component.
-(THIS SNIPPET WILL ONLY WORK IN THE FRONTEND CODE FILE.)
-=========================================================================*/
-
-/* For example, in a React component, you can use this snippet in your
-  function's RETURN statement */
-// const { data: todos } = await client.models.Todo.list()
-
-// return <ul>{todos.map(todo => <li key={todo.id}>{todo.content}</li>)}</ul>

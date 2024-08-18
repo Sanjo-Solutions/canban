@@ -44,9 +44,6 @@ export const handler: Schema['createOrganization2']['functionHandler'] = async (
   event,
   context
 ) => {
-  console.log('event', event)
-  console.log('context', context)
-
   const identity = event.identity as { sub: string }
 
   if (!(await isMemberOfAnOrganization(identity))) {
@@ -54,7 +51,7 @@ export const handler: Schema['createOrganization2']['functionHandler'] = async (
       query: createOrganization,
       variables: {
         input: {
-          owner: identity.sub,
+          owner: identity.sub, // TODO: :: username
         },
       },
     })
@@ -65,7 +62,7 @@ export const handler: Schema['createOrganization2']['functionHandler'] = async (
           query: createOrganizationMember,
           variables: {
             input: {
-              owner: identity.sub,
+              owner: identity.sub, // TODO: :: username
               organizationID: organization.id,
             },
           },
@@ -92,13 +89,12 @@ export const handler: Schema['createOrganization2']['functionHandler'] = async (
 async function isMemberOfAnOrganization(identity: {
   sub: string
 }): Promise<boolean> {
-  console.log('client.models', client.models)
+  console.log('identity', identity)
   const { data } = await client.graphql({
     query: listOrganizationMemberByOwner,
     variables: {
-      owner: identity.sub,
+      owner: identity.sub, // + '::' + identity.username, // TODO?
     },
   })
-  console.log('data', data)
   return data.listOrganizationMemberByOwner.items.length >= 1
 }
