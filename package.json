@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "sandbox": "ampx sandbox",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -12,6 +13,7 @@
   "dependencies": {
     "@aws-amplify/adapter-nextjs": "^1.2.13",
     "@aws-amplify/ui-react": "^6.1.13",
+    "@aws-appsync/utils": "^1.9.0",
     "aws-amplify": "^6.4.0",
     "bootstrap": "^5.3.3",
     "next": "^14.1.1",

@@ -28,7 +28,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "vitest.config.mts"
+    "vitest.config.mts",
+    "amplify/data/test.js"
   ],
   "exclude": ["node_modules", "amplify"]
 }

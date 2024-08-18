@@ -24,13 +24,8 @@ export function useOrganizationMember(
 
         if (user) {
           const { data: organizationMembers } =
-            await client.models.OrganizationMember.listOrganizationMemberByOwner(
-              {
-                owner: user.userId,
-              }
-            )
-          if (organizationMembers.length >= 1) {
-            const organizationMember = organizationMembers[0]
+            await client.queries.retrieveOrganizationMember()
+          if (organizationMembers) {
             setHasLoadedOrganizationMember(true)
             setOrganizationMember(organizationMember)
             return

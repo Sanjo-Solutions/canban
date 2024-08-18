@@ -3,6 +3,8 @@ import { createOrganization2 } from './create-organization2/resource.js'
 import { applyForMembership } from './apply-for-membership/resource.js'
 import { retrieveOrganizationName } from './retrieve-organization-name/resource.js'
 import { retrieveMembershipApplications } from './retrieve-membership-applications/resource.js'
+import { retrieveOrganizationMember } from './retrieve-organization-member/resource.js'
+import { retrieveOrganization } from './retrieve-organization/resource.js'
 
 const schema = a
   .schema({
@@ -63,12 +65,24 @@ const schema = a
       .returns(a.ref('MembershipApplication').required().array().required())
       .handler(a.handler.function(retrieveMembershipApplications))
       .authorization(allow => [allow.group('Mitarbeiter')]),
+    retrieveOrganizationMember: a
+      .query()
+      .returns(a.ref('OrganizationMember'))
+      .handler(a.handler.function(retrieveOrganizationMember))
+      .authorization(allow => [allow.authenticated()]),
+    retrieveOrganization: a
+      .query()
+      .returns(a.ref('Organization'))
+      .handler(a.handler.function(retrieveOrganization))
+      .authorization(allow => [allow.authenticated()]),
   })
   .authorization(allow => [
     allow.resource(createOrganization2),
     allow.resource(applyForMembership),
     allow.resource(retrieveOrganizationName),
     allow.resource(retrieveMembershipApplications),
+    allow.resource(retrieveOrganizationMember),
+    allow.resource(retrieveOrganization),
   ])
 
 export type Schema = ClientSchema<typeof schema>
